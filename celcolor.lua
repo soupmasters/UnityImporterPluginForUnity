@@ -6,6 +6,9 @@
 
 local PRODUCT_NAME = "Unity Animation Event"
 local PRODUCT_CREDITS = "Made by Soupmasters. Written by Martin Calander."
+local UNITY_ASEPRITE_PACKAGE_ID = "com.unity.2d.aseprite"
+local UNITY_IMPORTER_TIP_SECONDS = 8
+local UNITY_IMPORTER_RETRY_SECONDS = 3
 
 -- Managed-layer config (single place to change internal identifiers).
 -- NOTE: `EVENT_LAYER_METADATA` is always enforced by code and is not user-editable.
@@ -76,6 +79,7 @@ local I18N = {
     btn_no = "No",
     managed_layer_info = "Managed by Unity Animation Event.",
     managed_layer_info_count = "Animation events in file: {count}",
+    unity_importer_active = "{filename} is imported by Unity's 2D Aseprite Importer.",
     dont_import_info = "This layer wont be imported into Unity.\nAllow import again?",
     import_no_tags = "No timeline tags starting with @ were found.",
     import_done = "Imported {count} @tags to Unity Animation Events.",
@@ -125,7 +129,8 @@ local I18N = {
     btn_delete = "Borrar",
     btn_reset = "Restablecer",
     btn_yes = "Si",
-    btn_no = "No"
+    btn_no = "No",
+    unity_importer_active = "{filename} se importa mediante 2D Aseprite Importer de Unity."
   },
   sv = {
     cmd_add = "Lagg till Unity Animation Event",
@@ -159,7 +164,8 @@ local I18N = {
     btn_delete = "Radera",
     btn_reset = "Aterstall standard",
     btn_yes = "Ja",
-    btn_no = "Nej"
+    btn_no = "Nej",
+    unity_importer_active = "{filename} importeras av Unitys 2D Aseprite Importer."
   },
   fr = {
     cmd_add = "Ajouter Unity Animation Event",
@@ -193,7 +199,8 @@ local I18N = {
     btn_delete = "Supprimer",
     btn_reset = "Reinitialiser",
     btn_yes = "Oui",
-    btn_no = "Non"
+    btn_no = "Non",
+    unity_importer_active = "{filename} est importe par le 2D Aseprite Importer de Unity."
   },
   de = {
     cmd_add = "Unity Animation Event hinzufugen",
@@ -227,7 +234,8 @@ local I18N = {
     btn_delete = "Loschen",
     btn_reset = "Standard wiederherstellen",
     btn_yes = "Ja",
-    btn_no = "Nein"
+    btn_no = "Nein",
+    unity_importer_active = "{filename} wird von Unitys 2D Aseprite Importer importiert."
   },
   pt = {
     cmd_add = "Adicionar Unity Animation Event",
@@ -261,7 +269,8 @@ local I18N = {
     btn_delete = "Excluir",
     btn_reset = "Redefinir padrao",
     btn_yes = "Sim",
-    btn_no = "Nao"
+    btn_no = "Nao",
+    unity_importer_active = "{filename} e importado pelo 2D Aseprite Importer da Unity."
   }
 }
 
@@ -282,6 +291,10 @@ local inEnforce = false
 local settingsPanel = nil
 local settingsPanelBounds = nil
 local enforceManagedLayer
+local lastUnityImporterNoticeKey = nil
+local spriteEventListeners = {}
+local unityProjectImporterCache = {}
+local unityImporterRetryTimer = nil
 
 -- --------------------------
 -- Preferences
@@ -1308,6 +1321,304 @@ local function cmdManagedLayerInfo()
 end
 
 -- --------------------------
+-- Unity Aseprite Importer detection
+-- --------------------------
+
+local function fsIsFile(path)
+  if type(path) ~= "string" or path == "" or not app or not app.fs then return false end
+  local ok, result = pcall(function() return app.fs.isFile(path) end)
+  return ok and result == true
+end
+
+local function fsIsDirectory(path)
+  if type(path) ~= "string" or path == "" or not app or not app.fs then return false end
+  local ok, result = pcall(function() return app.fs.isDirectory(path) end)
+  return ok and result == true
+end
+
+local function fsFileSize(path)
+  if not fsIsFile(path) then return nil end
+  local ok, result = pcall(function() return app.fs.fileSize(path) end)
+  if not ok then return nil end
+  return tonumber(result)
+end
+
+local function fsNormalizePath(path)
+  if type(path) ~= "string" or path == "" or not app or not app.fs then return nil end
+  local ok, result = pcall(function() return app.fs.normalizePath(path) end)
+  if not ok or type(result) ~= "string" or result == "" then return nil end
+  return result
+end
+
+local function fsJoinPath(...)
+  if not app or not app.fs then return nil end
+  local parts = { ... }
+  local result = parts[1]
+  if type(result) ~= "string" or result == "" then return nil end
+  for index = 2, #parts do
+    local base = result
+    local part = parts[index]
+    local ok, joined = pcall(function() return app.fs.joinPath(base, part) end)
+    if not ok or type(joined) ~= "string" or joined == "" then return nil end
+    result = joined
+  end
+  return fsNormalizePath(result) or result
+end
+
+local function fsFilePath(path)
+  local ok, result = pcall(function() return app.fs.filePath(path) end)
+  if not ok then return nil end
+  return fsNormalizePath(result)
+end
+
+local function fsFileExtension(path)
+  local ok, result = pcall(function() return app.fs.fileExtension(path) end)
+  if not ok or type(result) ~= "string" then return "" end
+  return result:lower()
+end
+
+local function fsFileName(path)
+  local ok, result = pcall(function() return app.fs.fileName(path) end)
+  if not ok or type(result) ~= "string" or result == "" then return path end
+  return result
+end
+
+local function comparablePath(path)
+  local normalized = fsNormalizePath(path)
+  if not normalized then return nil end
+  if app.fs.pathSeparator == "\\" then
+    return normalized:lower()
+  end
+  return normalized
+end
+
+local function pathIsInside(path, directory)
+  local candidate = comparablePath(path)
+  local parent = comparablePath(directory)
+  if not candidate or not parent then return false end
+  if candidate == parent then return true end
+  local separator = app.fs.pathSeparator or "/"
+  return candidate:sub(1, #parent + 1) == parent .. separator
+end
+
+local function isUnityProjectRoot(directory)
+  return fsIsDirectory(fsJoinPath(directory, "Assets"))
+    and fsIsFile(fsJoinPath(directory, "Packages", "manifest.json"))
+    and fsIsFile(fsJoinPath(directory, "ProjectSettings", "ProjectVersion.txt"))
+end
+
+local function findUnityProjectRoot(filename)
+  local normalizedFilename = fsNormalizePath(filename)
+  local directory = normalizedFilename and fsFilePath(normalizedFilename) or nil
+  local steps = 0
+
+  while directory and steps < 256 do
+    if isUnityProjectRoot(directory) then
+      local assetsDirectory = fsJoinPath(directory, "Assets")
+      local packagesDirectory = fsJoinPath(directory, "Packages")
+      if pathIsInside(normalizedFilename, assetsDirectory)
+        or pathIsInside(normalizedFilename, packagesDirectory)
+      then
+        return directory
+      end
+    end
+
+    local parent = fsFilePath(directory)
+    if not parent or comparablePath(parent) == comparablePath(directory) then break end
+    directory = parent
+    steps = steps + 1
+  end
+
+  return nil
+end
+
+local function readTextFile(path)
+  if not fsIsFile(path) then return nil, "missing" end
+  if not io or type(io.open) ~= "function" then return nil, "unavailable" end
+  local opened, file = pcall(function() return io.open(path, "rb") end)
+  if not opened or not file then return nil, "unreadable" end
+  local readOk, contents = pcall(function() return file:read("*a") end)
+  pcall(function() file:close() end)
+  if not readOk or type(contents) ~= "string" then return nil, "unreadable" end
+  return contents, "ok"
+end
+
+local function decodeJson(contents)
+  if not json or type(json.decode) ~= "function" then return nil, false end
+  local ok, decoded = pcall(function() return json.decode(contents) end)
+  if not ok or decoded == nil then return nil, true end
+  return decoded, true
+end
+
+local function jsonFileHasDependency(path)
+  local contents, readStatus = readTextFile(path)
+  if not contents then return false, readStatus end
+
+  local decoded, decoderAvailable = decodeJson(contents)
+  if decoderAvailable then
+    if not decoded then return false, "invalid" end
+    local ok, found = pcall(function()
+      return decoded.dependencies[UNITY_ASEPRITE_PACKAGE_ID] ~= nil
+    end)
+    if not ok then return false, "invalid" end
+    return found == true, "ok"
+  end
+
+  return contents:find('"' .. UNITY_ASEPRITE_PACKAGE_ID .. '"', 1, true) ~= nil, "ok"
+end
+
+local function jsonFileHasPackageName(path)
+  local contents, readStatus = readTextFile(path)
+  if not contents then return false, readStatus end
+
+  local decoded, decoderAvailable = decodeJson(contents)
+  if decoderAvailable then
+    if not decoded then return false, "invalid" end
+    local ok, found = pcall(function()
+      return decoded.name == UNITY_ASEPRITE_PACKAGE_ID
+    end)
+    if not ok then return false, "invalid" end
+    return found == true, "ok"
+  end
+
+  local escapedId = UNITY_ASEPRITE_PACKAGE_ID:gsub("([^%w])", "%%%1")
+  return contents:match('"name"%s*:%s*"' .. escapedId .. '"') ~= nil, "ok"
+end
+
+local function unityProjectHasAsepriteImporter(projectRoot)
+  local projectKey = comparablePath(projectRoot) or projectRoot
+  local packagesDirectory = fsJoinPath(projectRoot, "Packages")
+  local embeddedPackage = fsJoinPath(
+    packagesDirectory,
+    UNITY_ASEPRITE_PACKAGE_ID,
+    "package.json"
+  )
+  local lockFile = fsJoinPath(packagesDirectory, "packages-lock.json")
+  local manifestFile = fsJoinPath(packagesDirectory, "manifest.json")
+
+  local sourcePath = manifestFile
+  local sourceKind = "dependencies"
+  if fsIsFile(embeddedPackage) then
+    sourcePath = embeddedPackage
+    sourceKind = "package"
+  elseif fsIsFile(lockFile) then
+    sourcePath = lockFile
+  end
+
+  local sourceKey = comparablePath(sourcePath) or sourcePath
+  local sourceSize = fsFileSize(sourcePath)
+  local cached = unityProjectImporterCache[projectKey]
+  if cached
+    and cached.sourceKey == sourceKey
+    and cached.sourceSize == sourceSize
+  then
+    return cached.installed
+  end
+
+  local installed, readStatus
+  if sourceKind == "package" then
+    installed, readStatus = jsonFileHasPackageName(sourcePath)
+  else
+    installed, readStatus = jsonFileHasDependency(sourcePath)
+  end
+  if readStatus ~= "invalid" then
+    unityProjectImporterCache[projectKey] = {
+      installed = installed,
+      sourceKey = sourceKey,
+      sourceSize = sourceSize,
+    }
+  end
+  return installed
+end
+
+local function unityImporterContext(sprite)
+  if not sprite then return nil, "not_candidate" end
+  local ok, filename = pcall(function() return sprite.filename end)
+  if not ok or type(filename) ~= "string" or filename == "" then
+    return nil, "not_candidate"
+  end
+
+  filename = fsNormalizePath(filename)
+  if not filename then return nil, "not_candidate" end
+  local extension = fsFileExtension(filename)
+  if extension ~= "ase" and extension ~= "aseprite" then
+    return nil, "not_candidate"
+  end
+  if not fsIsFile(filename) then return nil, "missing_file" end
+  if not fsIsFile(filename .. ".meta") then return nil, "missing_meta" end
+
+  local projectRoot = findUnityProjectRoot(filename)
+  if not projectRoot then return nil, "not_candidate" end
+  if not unityProjectHasAsepriteImporter(projectRoot) then
+    return nil, "importer_missing"
+  end
+  return {
+    filename = filename,
+    displayFilename = fsFileName(filename),
+    projectRoot = projectRoot,
+  }, nil
+end
+
+local function updateUnityImporterNotice(sprite)
+  if sprite ~= app.sprite then return false, "inactive" end
+  local context, reason = unityImporterContext(sprite)
+  if not context then
+    lastUnityImporterNoticeKey = nil
+    return false, reason
+  end
+
+  local key = context.filename .. "\0" .. context.projectRoot
+  if lastUnityImporterNoticeKey == key then return true, nil end
+
+  if app.isUIAvailable == false or type(app.tip) ~= "function" then
+    return false, "notice_unavailable"
+  end
+  local shown = pcall(function()
+    app.tip(
+      tr("unity_importer_active", { filename=context.displayFilename }),
+      UNITY_IMPORTER_TIP_SECONDS
+    )
+  end)
+  if shown then
+    lastUnityImporterNoticeKey = key
+    return true, nil
+  end
+  return false, "notice_failed"
+end
+
+local function stopUnityImporterRetry()
+  if not unityImporterRetryTimer then return end
+  pcall(function() unityImporterRetryTimer:stop() end)
+  unityImporterRetryTimer = nil
+end
+
+local function scheduleUnityImporterRetry(sprite, reason)
+  stopUnityImporterRetry()
+  if reason ~= "missing_file"
+    and reason ~= "missing_meta"
+    and reason ~= "importer_missing"
+  then
+    return
+  end
+  if Timer == nil then return end
+
+  local ok, timer = pcall(function()
+    return Timer{
+      interval=UNITY_IMPORTER_RETRY_SECONDS,
+      ontick=function()
+        stopUnityImporterRetry()
+        if pluginRef and sprite == app.sprite then
+          updateUnityImporterNotice(sprite)
+        end
+      end
+    }
+  end)
+  if not ok or not timer then return end
+  unityImporterRetryTimer = timer
+  pcall(function() unityImporterRetryTimer:start() end)
+end
+
+-- --------------------------
 -- Event wiring
 -- --------------------------
 
@@ -1347,20 +1658,72 @@ local function onAfterCommand(ev)
   enforceManagedLayer(app.activeSprite)
 end
 
+local function findSpriteEventEntry(sprite)
+  for _, entry in ipairs(spriteEventListeners) do
+    if entry.sprite == sprite then return entry end
+  end
+  return nil
+end
+
+local function addSpriteEventListener(entry, eventName, callback)
+  local ok, code = pcall(function()
+    return entry.events:on(eventName, callback)
+  end)
+  if not ok then return end
+  entry.listeners[#entry.listeners+1] = {
+    code = code,
+    callback = callback,
+  }
+end
+
 local function attachSpriteEvents(sprite)
-  if not sprite or not sprite.events then return end
-  sprite.events:on("change", function(ev) enforceManagedLayer(sprite) end)
-  sprite.events:on("layervisibility", function(ev) enforceManagedLayer(sprite) end)
-  sprite.events:on("layername", function(ev) enforceManagedLayer(sprite) end)
+  if not sprite or not sprite.events or findSpriteEventEntry(sprite) then return end
+  local entry = {
+    sprite = sprite,
+    events = sprite.events,
+    listeners = {},
+  }
+  spriteEventListeners[#spriteEventListeners+1] = entry
+
+  addSpriteEventListener(entry, "change", function(ev)
+    if pluginRef then enforceManagedLayer(sprite) end
+  end)
+  addSpriteEventListener(entry, "layervisibility", function(ev)
+    if pluginRef then enforceManagedLayer(sprite) end
+  end)
+  addSpriteEventListener(entry, "layername", function(ev)
+    if pluginRef then enforceManagedLayer(sprite) end
+  end)
+  addSpriteEventListener(entry, "filenamechange", function(ev)
+    if pluginRef and sprite == app.sprite then
+      local _, reason = updateUnityImporterNotice(sprite)
+      scheduleUnityImporterRetry(sprite, reason)
+    end
+  end)
+end
+
+local function detachSpriteEvents()
+  for _, entry in ipairs(spriteEventListeners) do
+    for _, listener in ipairs(entry.listeners) do
+      pcall(function()
+        entry.events:off(listener.code or listener.callback)
+      end)
+    end
+  end
+  spriteEventListeners = {}
 end
 
 local function onSiteChange()
   if prevSprite ~= app.sprite then
+    stopUnityImporterRetry()
+    detachSpriteEvents()
     prevSprite = app.sprite
     if prevSprite then
       attachSpriteEvents(prevSprite)
       enforceManagedLayer(prevSprite)
     end
+    local _, reason = updateUnityImporterNotice(prevSprite)
+    scheduleUnityImporterRetry(prevSprite, reason)
   end
 end
 
@@ -1369,7 +1732,12 @@ end
 -- --------------------------
 
 function init(plugin)
+  stopUnityImporterRetry()
+  detachSpriteEvents()
   pluginRef = plugin
+  prevSprite = nil
+  lastUnityImporterNoticeKey = nil
+  unityProjectImporterCache = {}
 
   ensurePreferenceDefaults()
 
@@ -1545,6 +1913,8 @@ function init(plugin)
   }
 
   if app and app.events then
+    pcall(function() app.events:off(onSiteChange) end)
+    pcall(function() app.events:off(onBeforeCommand) end)
     app.events:on("sitechange", onSiteChange)
     app.events:on("beforecommand", onBeforeCommand)
   end
@@ -1554,10 +1924,14 @@ end
 
 function exit(plugin)
   closeSettingsPanel()
+  stopUnityImporterRetry()
+  detachSpriteEvents()
   if app and app.events then
     pcall(function() app.events:off(onSiteChange) end)
     pcall(function() app.events:off(onBeforeCommand) end)
   end
   prevSprite = nil
+  lastUnityImporterNoticeKey = nil
+  unityProjectImporterCache = {}
   pluginRef = nil
 end

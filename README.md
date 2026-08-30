@@ -1,3 +1,5 @@
+![Unity Importer Plugin banner](assets/unity-importer-plugin-banner.png)
+
 # Unity Animation Event
 
 [![CI](https://github.com/martincalander/AsepriteUnityEvent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/martincalander/AsepriteUnityEvent/actions/workflows/ci.yml)
@@ -20,6 +22,8 @@ The repository root is the Aseprite extension package root. To install from sour
 
 Restart Aseprite or rescan the Scripts folder if the commands are not visible immediately.
 
+Unity importer notices require Aseprite 1.3.15 or newer.
+
 ## Features
 
 - Managed `Events` layer with enforced structure for consistent exports.
@@ -31,6 +35,7 @@ Restart Aseprite or rescan the Scripts folder if the commands are not visible im
 - Whole-file duplicate tag analyzer that can auto-rename duplicates to unique names with ` (1)`, ` (2)` suffixes.
 - Migration command to convert legacy `event:MyMethod` entries to current `event:@MyMethod` format.
 - Layer context action `Dont Import to Unity` that marks layer metadata as `DontImportToUnity` and dims the layer.
+- Status-bar notice when the current `.ase` or `.aseprite` asset is handled by Unity's 2D Aseprite Importer.
 - Multilingual UI support with auto language detection.
 
 ## Language Support
@@ -63,6 +68,8 @@ Language is configurable in `File > Scripts > Unity Animation Event Settings`.
 - Event layer integrity is automatically enforced (name, lock state, visibility, top-level placement).
 - Opening properties on a `DontImportToUnity` layer prompts to allow Unity import again (clears metadata and restores full opacity).
 - Existing event data without the `event:@` prefix is normalized automatically.
+- Importer detection requires a sibling `.meta` sidecar and the `com.unity.2d.aseprite` package in the containing project.
+- Aseprite may request permission to read the Unity project's package metadata when it first detects a matching asset.
 
 ## Development
 

@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Added a status-bar notice for `.ase` and `.aseprite` assets managed by Unity's 2D Aseprite Importer.
+- Detects resolved lock-file, direct manifest, and embedded `com.unity.2d.aseprite` package installations.
+
 ## 1.3.2 - 2026-07-31
 
 - Added automated source validation and deterministic extension packaging.
