@@ -1,10 +1,11 @@
--- Unity Animation Event (Aseprite extension)
+-- Unity Importer Plugin for Unity (Aseprite extension)
 -- Managed layer:
 --   name: "Events" (enforced)
 --   data: "UnityAnimationEventLayer" (enforced identifier)
 -- Cels on the managed layer store event data as: "event:@NAME"
 
-local PRODUCT_NAME = "Unity Animation Event"
+local PLUGIN_NAME = "Unity Importer Plugin for Unity"
+local EVENT_NAME = "Unity Animation Event"
 local PRODUCT_CREDITS = "Made by Soupmasters. Written by Martin Calander."
 local UNITY_ASEPRITE_PACKAGE_ID = "com.unity.2d.aseprite"
 local UNITY_IMPORTER_TIP_SECONDS = 8
@@ -48,14 +49,14 @@ local I18N = {
     cmd_migrate_legacy = "Migrate event:MyMethod to Current Format",
     cmd_dont_import_layer = "Dont Import to Unity",
     cmd_delete_layer = "Delete Unity Animation Event Layer",
-    cmd_settings = "Unity Animation Event Settings",
+    cmd_settings = "Unity Importer Plugin for Unity Settings",
     add_title = "Add {product}",
     add_label = "{product} name (stored as event:@NAME):",
     edit_title = "Edit {product}",
     edit_label = "{product} name for this frame:",
     overwrite_text = "One or more selected frames already have Unity Animation Events. Overwrite?",
     delete_layer_text = "Delete the managed Events layer and all stored Unity Animation Events for this sprite?",
-    settings_title = "{product} Settings",
+    settings_title = "{plugin} Settings",
     settings_event_color = "Event marker color (timeline dot)",
     settings_empty_color = "Empty cel color",
     settings_warn_overwrite = "Warn before overwrite",
@@ -77,7 +78,7 @@ local I18N = {
     btn_reset = "Reset Defaults",
     btn_yes = "Yes",
     btn_no = "No",
-    managed_layer_info = "Managed by Unity Animation Event.",
+    managed_layer_info = "Managed by {plugin}.",
     managed_layer_info_count = "Animation events in file: {count}",
     unity_importer_active = "{filename} is imported by Unity's 2D Aseprite Importer.",
     dont_import_info = "This layer wont be imported into Unity.\nAllow import again?",
@@ -102,14 +103,14 @@ local I18N = {
     cmd_edit = "Editar Unity Animation Event",
     cmd_remove = "Quitar Unity Animation Event",
     cmd_delete_layer = "Borrar capa Unity Animation Event",
-    cmd_settings = "Configuracion Unity Animation Event",
+    cmd_settings = "Configuracion de Unity Importer Plugin for Unity",
     add_title = "Agregar {product}",
     add_label = "Nombre de {product} (guardado como event:@NAME):",
     edit_title = "Editar {product}",
     edit_label = "Nombre de {product} para este frame:",
     overwrite_text = "Uno o mas frames seleccionados ya tienen Unity Animation Events. Sobrescribir?",
     delete_layer_text = "Borrar la capa Events administrada y todos los Unity Animation Events de este sprite?",
-    settings_title = "Configuracion de {product}",
+    settings_title = "Configuracion de {plugin}",
     settings_event_color = "Color del marcador de evento (punto en timeline)",
     settings_empty_color = "Color de cel vacia",
     settings_warn_overwrite = "Advertir antes de sobrescribir",
@@ -137,14 +138,14 @@ local I18N = {
     cmd_edit = "Redigera Unity Animation Event",
     cmd_remove = "Ta bort Unity Animation Event",
     cmd_delete_layer = "Ta bort Unity Animation Event-lager",
-    cmd_settings = "Unity Animation Event-installningar",
+    cmd_settings = "Unity Importer Plugin for Unity-installningar",
     add_title = "Lagg till {product}",
     add_label = "{product}-namn (sparas som event:@NAME):",
     edit_title = "Redigera {product}",
     edit_label = "{product}-namn for denna bildruta:",
     overwrite_text = "En eller flera valda bildrutor har redan Unity Animation Events. Skriv over?",
     delete_layer_text = "Ta bort det hanterade Events-lagret och alla Unity Animation Events i denna sprite?",
-    settings_title = "{product} installningar",
+    settings_title = "{plugin} installningar",
     settings_event_color = "Farg for event-markor (punkt i tidslinjen)",
     settings_empty_color = "Farg for tom cel",
     settings_warn_overwrite = "Varna innan overskrivning",
@@ -172,14 +173,14 @@ local I18N = {
     cmd_edit = "Modifier Unity Animation Event",
     cmd_remove = "Retirer Unity Animation Event",
     cmd_delete_layer = "Supprimer le calque Unity Animation Event",
-    cmd_settings = "Parametres Unity Animation Event",
+    cmd_settings = "Parametres Unity Importer Plugin for Unity",
     add_title = "Ajouter {product}",
     add_label = "Nom {product} (stocke comme event:@NAME):",
     edit_title = "Modifier {product}",
     edit_label = "Nom {product} pour cette image:",
     overwrite_text = "Une ou plusieurs images selectionnees ont deja des Unity Animation Events. Ecraser?",
     delete_layer_text = "Supprimer le calque Events gere et tous les Unity Animation Events de ce sprite?",
-    settings_title = "Parametres de {product}",
+    settings_title = "Parametres de {plugin}",
     settings_event_color = "Couleur du marqueur d'evenement (point timeline)",
     settings_empty_color = "Couleur du cel vide",
     settings_warn_overwrite = "Avertir avant ecrasement",
@@ -207,14 +208,14 @@ local I18N = {
     cmd_edit = "Unity Animation Event bearbeiten",
     cmd_remove = "Unity Animation Event entfernen",
     cmd_delete_layer = "Unity Animation Event-Ebene loschen",
-    cmd_settings = "Unity Animation Event Einstellungen",
+    cmd_settings = "Unity Importer Plugin for Unity Einstellungen",
     add_title = "{product} hinzufugen",
     add_label = "{product}-Name (gespeichert als event:@NAME):",
     edit_title = "{product} bearbeiten",
     edit_label = "{product}-Name fur dieses Frame:",
     overwrite_text = "Ein oder mehrere ausgewahlte Frames haben bereits Unity Animation Events. Uberschreiben?",
     delete_layer_text = "Die verwaltete Events-Ebene und alle gespeicherten Unity Animation Events fur dieses Sprite loschen?",
-    settings_title = "{product} Einstellungen",
+    settings_title = "{plugin} Einstellungen",
     settings_event_color = "Event-Markierungsfarbe (Timeline-Punkt)",
     settings_empty_color = "Leere-Cel-Farbe",
     settings_warn_overwrite = "Vor dem Uberschreiben warnen",
@@ -242,14 +243,14 @@ local I18N = {
     cmd_edit = "Editar Unity Animation Event",
     cmd_remove = "Remover Unity Animation Event",
     cmd_delete_layer = "Excluir camada Unity Animation Event",
-    cmd_settings = "Configuracoes Unity Animation Event",
+    cmd_settings = "Configuracoes de Unity Importer Plugin for Unity",
     add_title = "Adicionar {product}",
     add_label = "Nome de {product} (salvo como event:@NAME):",
     edit_title = "Editar {product}",
     edit_label = "Nome de {product} para este frame:",
     overwrite_text = "Um ou mais frames selecionados ja tem Unity Animation Events. Sobrescrever?",
     delete_layer_text = "Excluir a camada Events gerenciada e todos os Unity Animation Events deste sprite?",
-    settings_title = "Configuracoes de {product}",
+    settings_title = "Configuracoes de {plugin}",
     settings_event_color = "Cor do marcador de evento (ponto na timeline)",
     settings_empty_color = "Cor do cel vazio",
     settings_warn_overwrite = "Avisar antes de sobrescrever",
@@ -386,7 +387,7 @@ local function tr(key, vars)
   local lang = activeLanguageCode()
   local dict = I18N[lang] or I18N.en
   local text = dict[key] or I18N.en[key] or key
-  local allVars = { product = PRODUCT_NAME }
+  local allVars = { product = EVENT_NAME, plugin = PLUGIN_NAME }
   if type(vars) == "table" then
     for k, v in pairs(vars) do
       allVars[k] = v
@@ -824,7 +825,7 @@ local function cmdAdd()
 
     if warnOnOverwrite() and anyEventsOnFrames(layer, frames) then
       local res = app.alert{
-        title=PRODUCT_NAME,
+        title=PLUGIN_NAME,
         text=tr("overwrite_text"),
         buttons={ tr("btn_yes"), tr("btn_no") }
       }
@@ -921,7 +922,7 @@ local function cmdImportAtTags()
   local tags = sprite.tags
   local count = (tags and #tags) or 0
   if count == 0 then
-    app.alert{ title=PRODUCT_NAME, text=tr("import_no_tags"), buttons={ tr("btn_ok") } }
+    app.alert{ title=PLUGIN_NAME, text=tr("import_no_tags"), buttons={ tr("btn_ok") } }
     return
   end
 
@@ -943,7 +944,7 @@ local function cmdImportAtTags()
   end
 
   if #imports == 0 then
-    app.alert{ title=PRODUCT_NAME, text=tr("import_no_tags"), buttons={ tr("btn_ok") } }
+    app.alert{ title=PLUGIN_NAME, text=tr("import_no_tags"), buttons={ tr("btn_ok") } }
     return
   end
 
@@ -977,7 +978,7 @@ local function cmdImportAtTags()
   enforceManagedLayer(sprite)
 
   app.alert{
-    title=PRODUCT_NAME,
+    title=PLUGIN_NAME,
     text=tr("import_done", { count=#imports }) .. "\n" ..
          (deleteSourceTags and tr("import_done_removed") or tr("import_done_kept")),
     buttons={ tr("btn_ok") }
@@ -990,7 +991,7 @@ local function cmdMigrateLegacyEventFormat()
 
   local layer = findManagedLayer(sprite)
   if not layer then
-    app.alert{ title=PRODUCT_NAME, text=tr("migrate_no_layer"), buttons={ tr("btn_ok") } }
+    app.alert{ title=PLUGIN_NAME, text=tr("migrate_no_layer"), buttons={ tr("btn_ok") } }
     return
   end
 
@@ -1016,7 +1017,7 @@ local function cmdMigrateLegacyEventFormat()
   enforceManagedLayer(sprite)
 
   if migrated == 0 then
-    app.alert{ title=PRODUCT_NAME, text=tr("migrate_none"), buttons={ tr("btn_ok") } }
+    app.alert{ title=PLUGIN_NAME, text=tr("migrate_none"), buttons={ tr("btn_ok") } }
     return
   end
 
@@ -1025,7 +1026,7 @@ local function cmdMigrateLegacyEventFormat()
     msg = msg .. "\n" .. tr("migrate_skipped", { count=alreadyCurrent })
   end
 
-  app.alert{ title=PRODUCT_NAME, text=msg, buttons={ tr("btn_ok") } }
+  app.alert{ title=PLUGIN_NAME, text=msg, buttons={ tr("btn_ok") } }
 end
 
 local function collectDuplicateTagGroups(sprite)
@@ -1075,7 +1076,7 @@ local function makeTagNameUnique(baseName, used)
 end
 
 local function confirmUniqueTagsDialog(duplicateNameCount, duplicateTagCount)
-  local dlg = Dialog(PRODUCT_NAME)
+  local dlg = Dialog(PLUGIN_NAME)
   dlg:label{ text=tr("unique_found", { nameCount=duplicateNameCount, tagCount=duplicateTagCount }) }
 
   dlg:separator()
@@ -1093,7 +1094,7 @@ local function cmdUniqueTags()
 
   local groups, duplicateNameCount, duplicateTagCount = collectDuplicateTagGroups(sprite)
   if duplicateNameCount == 0 then
-    app.alert{ title=PRODUCT_NAME, text=tr("unique_no_duplicates"), buttons={ tr("btn_ok") } }
+    app.alert{ title=PLUGIN_NAME, text=tr("unique_no_duplicates"), buttons={ tr("btn_ok") } }
     return
   end
 
@@ -1124,7 +1125,7 @@ local function cmdUniqueTags()
   end)
 
   app.alert{
-    title=PRODUCT_NAME,
+    title=PLUGIN_NAME,
     text=tr("unique_done", { renamedCount=renamedCount }),
     buttons={ tr("btn_ok") }
   }
@@ -1138,7 +1139,7 @@ local function cmdDeleteLayer()
   if not layer then return end
 
   local res = app.alert{
-    title=PRODUCT_NAME,
+    title=PLUGIN_NAME,
     text=tr("delete_layer_text"),
     buttons={ tr("btn_delete"), tr("btn_cancel") }
   }
@@ -1297,7 +1298,7 @@ end
 
 local function promptAllowImportAgain(layer)
   local res = app.alert{
-    title=PRODUCT_NAME,
+    title=PLUGIN_NAME,
     text=tr("dont_import_info"),
     buttons={ tr("btn_yes"), tr("btn_no") }
   }
@@ -1314,7 +1315,7 @@ end
 local function cmdManagedLayerInfo()
   local eventCount = countAnimationEventsInSprite(app.activeSprite)
   app.alert{
-    title=PRODUCT_NAME,
+    title=PLUGIN_NAME,
     text=tr("managed_layer_info") .. "\n" .. tr("managed_layer_info_count", { count=eventCount }),
     buttons={ tr("btn_ok") }
   }

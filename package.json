@@ -1,6 +1,6 @@
 {
   "name": "unity-animation-event",
-  "displayName": "Unity Animation Event",
+  "displayName": "Unity Importer Plugin for Unity",
   "description": "Author Unity animation events directly in Aseprite's timeline for Unity import workflows.",
   "version": "1.3.2",
   "author": {
@@ -10,11 +10,11 @@
   "publisher": "martincalander",
   "license": "MIT",
   "categories": [ "Scripts" ],
-  "keywords": [ "unity", "animation", "event", "timeline", "aseprite" ],
-  "homepage": "https://github.com/martincalander/AsepriteUnityEvent",
+  "keywords": [ "unity", "aseprite", "importer", "animation", "event", "timeline" ],
+  "homepage": "https://github.com/soupmasters/UnityImporterPluginForUnity",
   "repository": {
     "type": "git",
-    "url": "https://github.com/martincalander/AsepriteUnityEvent.git"
+    "url": "https://github.com/soupmasters/UnityImporterPluginForUnity.git"
   },
   "engines": {
     "aseprite": ">=1.3.15",

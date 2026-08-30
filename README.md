@@ -1,11 +1,11 @@
-![Unity Importer Plugin banner](assets/unity-importer-plugin-banner.png)
+![Unity Importer Plugin for Unity banner](assets/unity-importer-plugin-banner.png)
 
-# Unity Animation Event
+# Unity Importer Plugin for Unity
 
-[![CI](https://github.com/martincalander/AsepriteUnityEvent/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/martincalander/AsepriteUnityEvent/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/martincalander/AsepriteUnityEvent?sort=semver)](https://github.com/martincalander/AsepriteUnityEvent/releases/latest)
-[![Downloads](https://img.shields.io/github/downloads/martincalander/AsepriteUnityEvent/total)](https://github.com/martincalander/AsepriteUnityEvent/releases)
-[![License](https://img.shields.io/github/license/martincalander/AsepriteUnityEvent)](LICENSE)
+[![CI](https://github.com/soupmasters/UnityImporterPluginForUnity/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/soupmasters/UnityImporterPluginForUnity/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/soupmasters/UnityImporterPluginForUnity?sort=semver)](https://github.com/soupmasters/UnityImporterPluginForUnity/releases/latest)
+[![Downloads](https://img.shields.io/github/downloads/soupmasters/UnityImporterPluginForUnity/total)](https://github.com/soupmasters/UnityImporterPluginForUnity/releases)
+[![License](https://img.shields.io/github/license/soupmasters/UnityImporterPluginForUnity)](LICENSE)
 
 Aseprite extension for authoring Unity animation events directly in the timeline.
 
@@ -50,7 +50,7 @@ The extension UI supports:
 - Portuguese (`pt`)
 - Auto mode (reads Aseprite UI language)
 
-Language is configurable in `File > Scripts > Unity Animation Event Settings`.
+Language is configurable in `File > Scripts > Unity Importer Plugin for Unity Settings`.
 
 ## Default Shortcuts (`my_keys`)
 
@@ -60,7 +60,7 @@ Language is configurable in `File > Scripts > Unity Animation Event Settings`.
 - `Ctrl+Alt+I`: Import `@Tags` to Unity Animation Events (whole file)
 - `Ctrl+Alt+U`: Analyze duplicate tags and rename to unique
 - `Ctrl+Alt+M`: Migrate `event:MyMethod` to current format
-- `Ctrl+Alt+S`: Unity Animation Event Settings
+- `Ctrl+Alt+S`: Unity Importer Plugin for Unity Settings
 
 ## Notes
 

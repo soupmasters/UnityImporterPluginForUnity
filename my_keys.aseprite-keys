@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <keyboard version="1">
   <commands>
-    <!-- Unity Animation Event default shortcuts -->
+    <!-- Unity Importer Plugin for Unity default shortcuts -->
     <key command="UnityEvents_Add" shortcut="Ctrl+Alt+E" />
     <key command="UnityEvents_Edit" shortcut="Ctrl+Alt+D" />
     <key command="UnityEvents_Remove" shortcut="Ctrl+Alt+R" />

@@ -20,7 +20,7 @@ concurrency:
 
 jobs:
   project-checks:
-    name: Validate Unity Animation Event
+    name: Validate Unity Importer Plugin for Unity
     runs-on: ubuntu-24.04
     steps:
       - name: Check out repository
@@ -40,7 +40,7 @@ jobs:
           manifest = json.loads(Path("package.json").read_text(encoding="utf-8"))
           expected = {
               "name": "unity-animation-event",
-              "displayName": "Unity Animation Event",
+              "displayName": "Unity Importer Plugin for Unity",
               "publisher": "martincalander",
               "license": "MIT",
           }
