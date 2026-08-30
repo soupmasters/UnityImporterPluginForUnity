@@ -13,12 +13,18 @@ Created and maintained by Martin Calander.
 
 ## Installation
 
-The repository root is the Aseprite extension package root. To install from source:
+The recommended way to install this extension is with [Aseprite Extension Manager](https://github.com/soupmasters/AsepriteExtensionManager):
 
-1. Download or clone this repository.
-2. Create a ZIP archive containing the root files, with `package.json` at the archive root.
-3. Rename the archive so it ends in `.aseprite-extension`.
-4. Open the archive with Aseprite and confirm the native installation prompt.
+1. Choose **Install from GitHub** in Extension Manager.
+2. Paste this Git URL:
+
+   ```text
+   https://github.com/soupmasters/UnityImporterPluginForUnity.git
+   ```
+
+3. Confirm the installation.
+
+For a direct installation, download the `.aseprite-extension` file from the [latest release](https://github.com/soupmasters/UnityImporterPluginForUnity/releases/latest), open it with Aseprite, and confirm the installation prompt.
 
 Restart Aseprite or rescan the Scripts folder if the commands are not visible immediately.
 
